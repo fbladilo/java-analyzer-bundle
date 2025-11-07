@@ -1,5 +1,5 @@
-FROM registry.redhat.io/ubi9-minimal:latest AS pnc-artifacts
-RUN microdnf -y install tar gzip && microdnf -y clean all
+FROM registry.redhat.io/ubi9:latest AS pnc-artifacts
+RUN dnf -y install tar gzip && dnf -y clean all
 # FIX ME: PNC artifacts
 #COPY artifacts/fernflower.jar /opt
 #COPY artifacts/java-analyzer-bundle.core.jar /opt
@@ -10,9 +10,9 @@ COPY --chown=1001:0 . /workspace
 WORKDIR /workspace
 RUN ls -la /workspace
 
-FROM registry.redhat.io/ubi9-minimal:latest
-RUN microdnf -y module enable maven:3.9
-RUN microdnf -y install openssl python39 java-1.8.0-openjdk-devel java-17-openjdk-devel maven-openjdk17 tar gzip --nodocs --setopt=install_weak_deps=0 && microdnf -y clean all
+FROM registry.redhat.io/ubi9:latest
+RUN dnf -y module enable maven:3.9
+RUN dnf -y install openssl python39 java-1.8.0-openjdk-devel java-17-openjdk-devel maven-openjdk17 tar gzip --nodocs --setopt=install_weak_deps=0 && dnf -y clean all
 ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk
 ENV JAVA8_HOME /usr/lib/jvm/java-1.8.0-openjdk
 RUN mvn --version
