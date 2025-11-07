@@ -31,3 +31,11 @@ COPY --from=pnc-artifacts /workspace/LICENSE /licenses/
 RUN ln -sf /root/.m2 /.m2 && chgrp -R 0 /root && chmod -R g=u /root
 
 ENTRYPOINT ["/jdtls/bin/jdtls"]
+
+LABEL \
+        description="Migration Toolkit for Applications - JDTLS Server" \
+        io.k8s.description="Migration Toolkit for Applications - JDTLS Server" \
+        io.k8s.display-name="MTA - JDTLS Server" \
+        io.openshift.maintainer.project="MTA" \
+        io.openshift.tags="migration,modernization,mta,tackle,konveyor" \
+        summary="Migration Toolkit for Applications - JDTLS Server"
