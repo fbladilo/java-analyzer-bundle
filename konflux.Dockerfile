@@ -1,0 +1,41 @@
+FROM registry.redhat.io/ubi9:latest AS pnc-artifacts
+RUN dnf -y install tar gzip && dnf -y clean all
+# FIX ME: PNC artifacts
+#COPY artifacts/fernflower.jar /opt
+#COPY artifacts/java-analyzer-bundle.core.jar /opt
+#WORKDIR /jdtls
+#COPY artifacts/jdtls-product.tar.gz /jdtls
+#RUN tar -xvf jdtls-product.tar.gz --no-same-owner && chmod 755 /jdtls/bin/jdtls && rm -rf jdtls-product.tar.gz
+COPY --chown=1001:0 . /workspace
+WORKDIR /workspace
+RUN ls -la /workspace
+
+FROM registry.redhat.io/ubi9:latest
+RUN dnf -y module enable maven:3.9
+RUN dnf -y install openssl python39 java-1.8.0-openjdk-devel java-17-openjdk-devel maven-openjdk17 tar gzip --nodocs --setopt=install_weak_deps=0 && dnf -y clean all
+ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk
+ENV JAVA8_HOME /usr/lib/jvm/java-1.8.0-openjdk
+RUN mvn --version
+
+RUN mkdir /root/.gradle
+COPY --from=pnc-artifacts /workspace/gradle/build.gradle /usr/local/etc/task.gradle
+COPY --from=pnc-artifacts /workspace/gradle/build-v9.gradle /usr/local/etc/task-v9.gradle
+
+COPY --from=pnc-artifacts /workspace/hack/maven.default.index /usr/local/etc/maven.default.index
+#COPY --from=pnc-artifacts /jdtls /jdtls/
+#COPY --from=pnc-artifacts /opt/java-analyzer-bundle.core.jar /jdtls/java-analyzer-bundle/java-analyzer-bundle.core/target/
+#COPY --from=pnc-artifacts /opt/fernflower.jar /bin/fernflower.jar
+COPY --from=pnc-artifacts /workspace/jdtls-bin-override/jdtls.py /jdtls/bin/jdtls.py
+COPY --from=pnc-artifacts /workspace/LICENSE /licenses/
+
+RUN ln -sf /root/.m2 /.m2 && chgrp -R 0 /root && chmod -R g=u /root
+
+ENTRYPOINT ["/jdtls/bin/jdtls"]
+
+LABEL \
+        description="Migration Toolkit for Applications - JDTLS Server" \
+        io.k8s.description="Migration Toolkit for Applications - JDTLS Server" \
+        io.k8s.display-name="MTA - JDTLS Server" \
+        io.openshift.maintainer.project="MTA" \
+        io.openshift.tags="migration,modernization,mta,tackle,konveyor" \
+        summary="Migration Toolkit for Applications - JDTLS Server"
