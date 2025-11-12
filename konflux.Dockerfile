@@ -13,6 +13,7 @@ RUN ls -la /workspace
 FROM registry.redhat.io/ubi9:latest
 # FIXME: modules in ART tooling not working at the moment
 #RUN dnf -y module enable maven:3.9
+RUN dnf module list
 RUN dnf -y install openssl python39 java-1.8.0-openjdk-devel java-17-openjdk-devel maven-openjdk17 tar gzip --nodocs --setopt=install_weak_deps=0 && dnf -y clean all
 ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk
 ENV JAVA8_HOME /usr/lib/jvm/java-1.8.0-openjdk
