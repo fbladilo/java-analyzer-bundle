@@ -1,14 +1,14 @@
 FROM registry.redhat.io/ubi9:latest AS pnc-artifacts
 RUN dnf -y install tar gzip && dnf -y clean all
-# FIX ME: PNC artifacts
-#COPY artifacts/fernflower.jar /opt
-#COPY artifacts/java-analyzer-bundle.core.jar /opt
-#WORKDIR /jdtls
-#COPY artifacts/jdtls-product.tar.gz /jdtls
-#RUN tar -xvf jdtls-product.tar.gz --no-same-owner && chmod 755 /jdtls/bin/jdtls && rm -rf jdtls-product.tar.gz
 COPY --chown=1001:0 . /workspace
-WORKDIR /workspace
-RUN ls -la /workspace
+# Add some debugging
+RUN cat /cachi2/cachi2.env /workspace/artifacts.lock.yaml
+RUN ls -la /cachi2/output/deps/generic/
+RUN cp /cachi2/output/deps/generic/fernflower-8.0.0.CR1-redhat-00003.jar /opt/fernflower.jar
+RUN cp /cachi2/output/deps/generic/java-analyzer-bundle.core-8.0.0.CR1-redhat-00006.jar /opt/java-analyzer-bundle.core.jar
+WORKDIR /jdtls
+RUN cp /cachi2/output/deps/generic/org.eclipse.jdt.ls.product-7.2.0.CR1-redhat-00001.tar.gz /jdtls/jdtls-product.tar.gz
+RUN tar -xvf jdtls-product.tar.gz --no-same-owner && chmod 755 /jdtls/bin/jdtls && rm -rf jdtls-product.tar.gz
 
 FROM registry.redhat.io/ubi9:latest
 # FIXME: modules in ART tooling not working at the moment
@@ -24,9 +24,9 @@ COPY --from=pnc-artifacts /workspace/gradle/build.gradle /usr/local/etc/task.gra
 COPY --from=pnc-artifacts /workspace/gradle/build-v9.gradle /usr/local/etc/task-v9.gradle
 
 COPY --from=pnc-artifacts /workspace/hack/maven.default.index /usr/local/etc/maven.default.index
-#COPY --from=pnc-artifacts /jdtls /jdtls/
-#COPY --from=pnc-artifacts /opt/java-analyzer-bundle.core.jar /jdtls/java-analyzer-bundle/java-analyzer-bundle.core/target/
-#COPY --from=pnc-artifacts /opt/fernflower.jar /bin/fernflower.jar
+COPY --from=pnc-artifacts /jdtls /jdtls/
+COPY --from=pnc-artifacts /opt/java-analyzer-bundle.core.jar /jdtls/java-analyzer-bundle/java-analyzer-bundle.core/target/
+COPY --from=pnc-artifacts /opt/fernflower.jar /bin/fernflower.jar
 COPY --from=pnc-artifacts /workspace/jdtls-bin-override/jdtls.py /jdtls/bin/jdtls.py
 COPY --from=pnc-artifacts /workspace/LICENSE /licenses/
 
