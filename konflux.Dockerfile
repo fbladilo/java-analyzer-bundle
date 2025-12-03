@@ -1,11 +1,14 @@
-FROM registry.redhat.io/ubi9:latest AS pnc-artifacts
-RUN dnf -y install tar gzip && dnf -y clean all
+FROM registry.redhat.io/ubi9:latest AS artifacts
+RUN dnf -y install tar unzip gzip && dnf -y clean all
 COPY --chown=1001:0 . /workspace
 # Add some debugging
 RUN cat /cachi2/cachi2.env /workspace/artifacts.lock.yaml
 RUN ls -la /cachi2/output/deps/generic/
 RUN cp /cachi2/output/deps/generic/fernflower-8.0.0.CR1-redhat-00003.jar /opt/fernflower.jar
 RUN cp /cachi2/output/deps/generic/java-analyzer-bundle.core-8.0.0.CR1-redhat-00006.jar /opt/java-analyzer-bundle.core.jar
+WORKDIR /maven-index-data
+RUN cp /cachi2/output/deps/generic/maven-index-data-v20251112021242.zip /maven-index-data/maven-index-data.zip
+RUN unzip maven-index-data.zip && rm -rf maven-index-data.zip
 WORKDIR /jdtls
 RUN cp /cachi2/output/deps/generic/org.eclipse.jdt.ls.product-7.2.0.CR1-redhat-00001.tar.gz /jdtls/jdtls-product.tar.gz
 RUN tar -xvf jdtls-product.tar.gz --no-same-owner && chmod 755 /jdtls/bin/jdtls && rm -rf jdtls-product.tar.gz
@@ -20,15 +23,18 @@ ENV JAVA8_HOME /usr/lib/jvm/java-1.8.0-openjdk
 RUN mvn --version
 
 RUN mkdir /root/.gradle
-COPY --from=pnc-artifacts /workspace/gradle/build.gradle /usr/local/etc/task.gradle
-COPY --from=pnc-artifacts /workspace/gradle/build-v9.gradle /usr/local/etc/task-v9.gradle
+COPY --from=artifacts /workspace/gradle/build.gradle /usr/local/etc/task.gradle
+COPY --from=artifacts /workspace/gradle/build-v9.gradle /usr/local/etc/task-v9.gradle
 
-COPY --from=pnc-artifacts /workspace/hack/maven.default.index /usr/local/etc/maven.default.index
-COPY --from=pnc-artifacts /jdtls /jdtls/
-COPY --from=pnc-artifacts /opt/java-analyzer-bundle.core.jar /jdtls/java-analyzer-bundle/java-analyzer-bundle.core/target/
-COPY --from=pnc-artifacts /opt/fernflower.jar /bin/fernflower.jar
-COPY --from=pnc-artifacts /workspace/jdtls-bin-override/jdtls.py /jdtls/bin/jdtls.py
-COPY --from=pnc-artifacts /workspace/LICENSE /licenses/
+COPY --from=artifacts /maven-index-data/central.archive-metadata.txt /usr/local/etc/maven-index.txt
+COPY --from=artifacts /maven-index-data/central.archive-metadata.idx /usr/local/etc/maven-index.idx
+
+COPY --from=artifacts /workspace/hack/maven.default.index /usr/local/etc/maven.default.index
+COPY --from=artifacts /jdtls /jdtls/
+COPY --from=artifacts /opt/java-analyzer-bundle.core.jar /jdtls/java-analyzer-bundle/java-analyzer-bundle.core/target/
+COPY --from=artifacts /opt/fernflower.jar /bin/fernflower.jar
+COPY --from=artifacts /workspace/jdtls-bin-override/jdtls.py /jdtls/bin/jdtls.py
+COPY --from=artifacts /workspace/LICENSE /licenses/
 
 RUN ln -sf /root/.m2 /.m2 && chgrp -R 0 /root && chmod -R g=u /root
 
