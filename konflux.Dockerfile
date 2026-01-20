@@ -12,13 +12,12 @@ RUN unzip maven-index-data.zip && rm -rf maven-index-data.zip
 WORKDIR /jdtls
 RUN cp /cachi2/output/deps/generic/org.eclipse.jdt.ls.product-7.2.0.CR1-redhat-00001.tar.gz /jdtls/jdtls-product.tar.gz
 RUN tar -xvf jdtls-product.tar.gz --no-same-owner && chmod 755 /jdtls/bin/jdtls && rm -rf jdtls-product.tar.gz
+RUN cp /workspace/jdtls-bin-override/jdtls.py /jdtls/bin/jdtls.py
 
 FROM registry.redhat.io/ubi9:latest
-# FIXME: modules in ART tooling not working at the moment
-#RUN dnf -y module enable maven:3.9
 RUN dnf module list
-RUN dnf -y install openssl python39 java-1.8.0-openjdk-devel java-17-openjdk-devel maven-openjdk17 tar gzip --nodocs --setopt=install_weak_deps=0 && dnf -y clean all
-ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk
+RUN dnf -y install openssl python39 java-1.8.0-openjdk-devel java-21-openjdk-devel maven-openjdk21 tar gzip --nodocs --setopt=install_weak_deps=0 && dnf -y clean all
+ENV JAVA_HOME /usr/lib/jvm/java-21-openjdk
 ENV JAVA8_HOME /usr/lib/jvm/java-1.8.0-openjdk
 RUN mvn --version
 
@@ -26,14 +25,13 @@ RUN mkdir /root/.gradle
 COPY --from=artifacts /workspace/gradle/build.gradle /usr/local/etc/task.gradle
 COPY --from=artifacts /workspace/gradle/build-v9.gradle /usr/local/etc/task-v9.gradle
 
-COPY --from=artifacts /maven-index-data/central.archive-metadata.txt /usr/local/etc/maven-index.txt
-#COPY --from=artifacts /maven-index-data/central.archive-metadata.idx /usr/local/etc/maven-index.idx
-
 COPY --from=artifacts /workspace/hack/maven.default.index /usr/local/etc/maven.default.index
+COPY --from=artifacts /maven-index-data/central.archive-metadata.txt /usr/local/etc/maven-index.txt
+
 COPY --from=artifacts /jdtls /jdtls/
 COPY --from=artifacts /opt/java-analyzer-bundle.core.jar /jdtls/java-analyzer-bundle/java-analyzer-bundle.core/target/
 COPY --from=artifacts /opt/fernflower.jar /bin/fernflower.jar
-COPY --from=artifacts /workspace/jdtls-bin-override/jdtls.py /jdtls/bin/jdtls.py
+#COPY --from=artifacts /workspace/jdtls-bin-override/jdtls.py /jdtls/bin/jdtls.py
 COPY --from=artifacts /workspace/LICENSE /licenses/
 
 RUN ln -sf /root/.m2 /.m2 && chgrp -R 0 /root && chmod -R g=u /root
