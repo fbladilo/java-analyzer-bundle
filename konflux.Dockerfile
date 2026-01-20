@@ -10,7 +10,6 @@ WORKDIR /maven-index-data
 RUN cp /cachi2/output/deps/generic/maven-index-data-v20251112021242.zip /maven-index-data/maven-index-data.zip
 RUN unzip maven-index-data.zip && rm -rf maven-index-data.zip
 WORKDIR /jdtls
-RUN cp /cachi2/output/deps/generic/org.eclipse.jdt.ls.product-7.2.0.CR1-redhat-00001.tar.gz /jdtls/jdtls-product.tar.gz
 RUN cp /cachi2/output/deps/generic/jdt-language-server-1.51.0-202510022025.tar.gz /jdtls/jdtls-product.tar.gz
 RUN tar -xvf jdtls-product.tar.gz --no-same-owner && chmod 755 /jdtls/bin/jdtls && rm -rf jdtls-product.tar.gz
 RUN cp /workspace/jdtls-bin-override/jdtls.py /jdtls/bin/jdtls.py
