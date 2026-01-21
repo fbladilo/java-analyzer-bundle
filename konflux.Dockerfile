@@ -1,14 +1,14 @@
 FROM registry.redhat.io/ubi9:latest AS artifacts
 RUN dnf -y install tar unzip gzip && dnf -y clean all
 COPY --chown=1001:0 . /workspace
-# Add some debugging
-RUN cat /cachi2/cachi2.env /workspace/artifacts.lock.yaml
-RUN ls -la /cachi2/output/deps/generic/
-RUN cp /cachi2/output/deps/generic/fernflower-8.0.0.CR1-redhat-00003.jar /opt/fernflower.jar
+
+RUN cp /cachi2/output/deps/generic/fernflower-8.1.0.GA-redhat-00001.jar /opt/fernflower.jar
 RUN cp /cachi2/output/deps/generic/java-analyzer-bundle.core-8.1.0.CR1-redhat-00003.jar /opt/java-analyzer-bundle.core.jar
+
 WORKDIR /maven-index-data
 RUN cp /cachi2/output/deps/generic/maven-index-data-v20251112021242.zip /maven-index-data/maven-index-data.zip
 RUN unzip maven-index-data.zip && rm -rf maven-index-data.zip
+
 WORKDIR /jdtls
 RUN cp /cachi2/output/deps/generic/jdt-language-server-1.51.0-202510022025.tar.gz /jdtls/jdtls-product.tar.gz
 RUN tar -xvf jdtls-product.tar.gz --no-same-owner && chmod 755 /jdtls/bin/jdtls && rm -rf jdtls-product.tar.gz
