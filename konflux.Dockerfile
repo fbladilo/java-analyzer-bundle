@@ -6,7 +6,7 @@ RUN cp /cachi2/output/deps/generic/fernflower-8.1.0.GA-redhat-00001.jar /opt/fer
 RUN cp /cachi2/output/deps/generic/java-analyzer-bundle.core-8.1.0.CR1-redhat-00003.jar /opt/java-analyzer-bundle.core.jar
 
 WORKDIR /maven-index-data
-RUN cp /cachi2/output/deps/generic/maven-index-data-v20251112021242.zip /maven-index-data/maven-index-data.zip
+RUN cp /cachi2/output/deps/generic/maven-index-data.zip /maven-index-data/maven-index-data.zip
 RUN unzip maven-index-data.zip && rm -rf maven-index-data.zip
 
 WORKDIR /jdtls
