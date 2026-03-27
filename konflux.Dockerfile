@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9:latest AS artifacts
+FROM registry.redhat.io/ubi10:latest AS artifacts
 RUN dnf -y install tar unzip gzip && dnf -y clean all
 COPY --chown=1001:0 . /workspace
 
@@ -14,7 +14,7 @@ RUN cp /cachi2/output/deps/generic/jdt-language-server-1.51.0-202510022025.tar.g
 RUN tar -xvf jdtls-product.tar.gz --no-same-owner && chmod 755 /jdtls/bin/jdtls && rm -rf jdtls-product.tar.gz
 RUN cp /workspace/jdtls-bin-override/jdtls.py /jdtls/bin/jdtls.py
 
-FROM registry.redhat.io/ubi9:latest
+FROM registry.redhat.io/ubi10:latest
 RUN dnf module list
 RUN dnf -y install openssl python39 java-1.8.0-openjdk-devel java-21-openjdk-devel maven-openjdk21 tar gzip --nodocs --setopt=install_weak_deps=0 && dnf -y clean all
 ENV JAVA_HOME /usr/lib/jvm/java-21-openjdk
